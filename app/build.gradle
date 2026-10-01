@@ -1,0 +1,15 @@
+plugins { id 'com.android.application' }
+
+dependencies { implementation 'androidx.core:core:1.15.0' }
+
+android {
+    namespace 'com.example.taskreminder'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.example.taskreminder'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+}

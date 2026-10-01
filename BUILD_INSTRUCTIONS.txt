@@ -1,0 +1,9 @@
+1. Push the TaskReminder folder to a GitHub repository.
+2. Open Actions and select Build Android APK.
+3. The workflow runs automatically after a push, or use Run workflow manually.
+4. Wait for the build to finish successfully.
+5. Open the completed workflow run and download the artifact named TaskReminder-debug-apk.
+6. Extract app-debug.apk and install it on Android.
+7. If Android blocks installation, allow "Install unknown apps" for the browser/file manager you used, then install again.
+8. On first launch, allow notifications. On Android 12+, allow exact-alarm access if requested/needed.
+9. For reliable alarms, avoid aggressive battery optimization; on some phones use Settings -> Apps -> Task Reminder -> Battery -> Unrestricted.
