@@ -166,14 +166,17 @@ public class MainActivity extends Activity {
 
         TimePicker tp=new TimePicker(this);
         tp.setIs24HourView(false);
-        tp.setScaleX(1.12f);tp.setScaleY(1.12f);
-        LinearLayout.LayoutParams tpp=new LinearLayout.LayoutParams(-1,dp(210));
+        // Keep the native clock at normal scale and give the complete dial enough room.
+        // The previous 210dp area + 1.12x scaling clipped the lower half of the clock.
+        tp.setScaleX(1.0f);tp.setScaleY(1.0f);
+        LinearLayout.LayoutParams tpp=new LinearLayout.LayoutParams(-1,dp(320));
         timeCard.addView(tp,tpp);
 
         TextView note=tv("The alarm will ring automatically at this time.",13,muted,false);
         note.setGravity(Gravity.CENTER);
-        timeCard.addView(note,new LinearLayout.LayoutParams(-1,dp(32)));
-        LinearLayout.LayoutParams tcp=new LinearLayout.LayoutParams(-1,dp(290));
+        timeCard.addView(note,new LinearLayout.LayoutParams(-1,dp(42)));
+        // Let the card wrap around the full clock instead of clipping it to a fixed height.
+        LinearLayout.LayoutParams tcp=new LinearLayout.LayoutParams(-1,-2);
         tcp.topMargin=dp(8);content.addView(timeCard,tcp);
 
         TextView info=tv("🔔  Full-screen alarm  •  🔊  Alarm sound  •  🗣  Task name spoken",13,muted,false);
