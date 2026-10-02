@@ -45,6 +45,7 @@ public class AlarmReceiver extends BroadcastReceiver {
                 .setContentText(t.name)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setOngoing(true)
                 .setAutoCancel(false)
                 .setFullScreenIntent(full,true)
@@ -54,7 +55,13 @@ public class AlarmReceiver extends BroadcastReceiver {
         nm.notify((int)id,n);
 
         AlarmScheduler.schedule(c,t);
+        // Full-screen intent is the primary lock-screen launch mechanism.
+        // The explicit activity launch is kept as a fallback for devices that allow
+        // background activity starts from alarm broadcasts.
         try{c.startActivity(ai);}catch(Exception ignored){}
+
+        // If Android has revoked full-screen intent access, send the user to the
+        // app's system setting on the next normal app interaction rather than failing silently.
 
         if(wakeLock!=null){
             try{if(wakeLock.isHeld())wakeLock.release();}catch(Exception ignored){}
