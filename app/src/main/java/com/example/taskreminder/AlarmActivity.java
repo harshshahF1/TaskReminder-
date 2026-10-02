@@ -34,12 +34,30 @@ public class AlarmActivity extends Activity {
 
     @Override protected void onCreate(Bundle b){
         super.onCreate(b);
+        // Modern Android lock-screen behavior: wake the display and show this alarm
+        // directly above the keyguard, without requiring the user to unlock first.
+        if(Build.VERSION.SDK_INT>=27){
+            setShowWhenLocked(true);
+            setTurnScreenOn(true);
+        }
         getWindow().addFlags(
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
                 WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON|
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
         );
+        if(Build.VERSION.SDK_INT>=26){
+            getWindow().setStatusBarColor(Color.rgb(10,16,31));
+            getWindow().setNavigationBarColor(Color.rgb(10,16,31));
+        }
+        // Ask Android to remove the keyguard only when the device policy allows it.
+        // On a secure lock screen the alarm remains visible above the lock screen.
+        try{
+            android.app.KeyguardManager km=(android.app.KeyguardManager)getSystemService(KEYGUARD_SERVICE);
+            if(km!=null && km.isKeyguardLocked() && Build.VERSION.SDK_INT>=26){
+                km.requestDismissKeyguard(this,null);
+            }
+        }catch(Exception ignored){}
         if(Build.VERSION.SDK_INT>=27) getWindow().setNavigationBarColor(Color.rgb(10,16,31));
         if(Build.VERSION.SDK_INT>=23) getWindow().getDecorView().setSystemUiVisibility(0);
 
