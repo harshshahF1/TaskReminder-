@@ -39,6 +39,15 @@ public class MainActivity extends Activity {
         build();
     }
 
+    @Override protected void onResume(){
+        super.onResume();
+        if(tasks!=null){
+            for(Task t:TaskStore.load(this)){
+                if(t.active) AlarmScheduler.schedule(this,t);
+            }
+        }
+    }
+
     void build(){
         LinearLayout root=new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);root.setPadding(dp(18),dp(14),dp(18),dp(10));
@@ -198,7 +207,17 @@ public class MainActivity extends Activity {
             if(s.isEmpty()){name.setError("Enter a task name");name.requestFocus();return;}
             Task t=new Task();
             t.id=System.currentTimeMillis();t.name=s;t.hour=tp.getHour();t.minute=tp.getMinute();
-            tasks.add(t);TaskStore.save(this,tasks);AlarmScheduler.schedule(this,t);
+            tasks.add(t);
+            TaskStore.save(this,tasks);
+            AlarmScheduler.schedule(this,t);
+
+            // Android 12+ may require the user to allow exact alarms.
+            // Open the system setting once for this newly created reminder.
+            if(Build.VERSION.SDK_INT>=31 && !AlarmScheduler.canScheduleExact(this)){
+                new Handler(Looper.getMainLooper()).postDelayed(
+                        ()->AlarmScheduler.openExactAlarmSettings(this),250);
+            }
+
             refresh();dialog.dismiss();
         });
 
