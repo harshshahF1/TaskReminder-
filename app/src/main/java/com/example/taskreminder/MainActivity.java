@@ -112,25 +112,112 @@ public class MainActivity extends Activity {
     }
 
     void addTask(){
-        EditText name=new EditText(this);name.setHint("What do you need to remember?");
-        name.setSingleLine(true);name.setTextSize(16);name.setPadding(dp(14),0,dp(14),0);
-        name.setBackground(shape(Color.rgb(245,247,251),16));
+        final Dialog dialog=new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        TimePicker tp=new TimePicker(this);tp.setIs24HourView(false);
-        LinearLayout box=new LinearLayout(this);box.setOrientation(LinearLayout.VERTICAL);box.setPadding(dp(4),dp(4),dp(4),0);
-        box.addView(name,new LinearLayout.LayoutParams(-1,dp(54)));
-        TextView label=tv("Daily alarm time",14,muted,true);label.setPadding(dp(4),dp(16),0,dp(4));box.addView(label);
-        box.addView(tp,new LinearLayout.LayoutParams(-1,dp(150)));
+        LinearLayout root=new LinearLayout(this);
+        root.setOrientation(LinearLayout.VERTICAL);
+        root.setBackgroundColor(canvas);
+        root.setPadding(dp(20),dp(16),dp(20),dp(14));
 
-        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Create daily reminder")
-                .setMessage("You’ll get a full-screen alarm and spoken task reminder at this time every day.")
-                .setView(box).setPositiveButton("Create alarm",null).setNegativeButton("Cancel",null).create();
-        dialog.setOnShowListener(x->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
-            String s=name.getText().toString().trim();if(s.isEmpty()){name.setError("Enter a task name");return;}
-            Task t=new Task();t.id=System.currentTimeMillis();t.name=s;t.hour=tp.getHour();t.minute=tp.getMinute();
-            tasks.add(t);TaskStore.save(this,tasks);AlarmScheduler.schedule(this,t);refresh();dialog.dismiss();
-        }));
+        LinearLayout head=new LinearLayout(this);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        TextView back=tv("‹",38,ink,false);
+        back.setGravity(Gravity.CENTER);
+        back.setOnClickListener(v->dialog.dismiss());
+        head.addView(back,new LinearLayout.LayoutParams(dp(48),dp(52)));
+        LinearLayout ht=new LinearLayout(this);
+        ht.setOrientation(LinearLayout.VERTICAL);
+        ht.addView(tv("New daily reminder",23,ink,true));
+        ht.addView(tv("Create an alarm that repeats every day",13,muted,false));
+        head.addView(ht,new LinearLayout.LayoutParams(0,-2,1));
+        root.addView(head,new LinearLayout.LayoutParams(-1,dp(58)));
+
+        ScrollView scroll=new ScrollView(this);
+        scroll.setFillViewport(true);
+        LinearLayout content=new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(0,dp(12),0,dp(12));
+
+        TextView taskLabel=tv("TASK",12,muted,true);
+        content.addView(taskLabel,new LinearLayout.LayoutParams(-1,dp(28)));
+
+        EditText name=new EditText(this);
+        name.setHint("e.g. Analyse report of data breach");
+        name.setSingleLine(true);
+        name.setTextSize(17);
+        name.setPadding(dp(16),0,dp(16),0);
+        name.setBackground(shape(Color.WHITE,18));
+        content.addView(name,new LinearLayout.LayoutParams(-1,dp(58)));
+
+        TextView timeLabel=tv("ALARM TIME",12,muted,true);
+        LinearLayout.LayoutParams tlp=new LinearLayout.LayoutParams(-1,dp(28));
+        tlp.topMargin=dp(22);content.addView(timeLabel,tlp);
+
+        LinearLayout timeCard=new LinearLayout(this);
+        timeCard.setOrientation(LinearLayout.VERTICAL);
+        timeCard.setGravity(Gravity.CENTER);
+        timeCard.setPadding(dp(8),dp(10),dp(8),dp(10));
+        timeCard.setBackground(shape(Color.WHITE,24));
+
+        TextView every=tv("EVERY DAY",12,Color.rgb(38,115,82),true);
+        every.setGravity(Gravity.CENTER);
+        timeCard.addView(every,new LinearLayout.LayoutParams(-1,dp(30)));
+
+        TimePicker tp=new TimePicker(this);
+        tp.setIs24HourView(false);
+        tp.setScaleX(1.12f);tp.setScaleY(1.12f);
+        LinearLayout.LayoutParams tpp=new LinearLayout.LayoutParams(-1,dp(210));
+        timeCard.addView(tp,tpp);
+
+        TextView note=tv("The alarm will ring automatically at this time.",13,muted,false);
+        note.setGravity(Gravity.CENTER);
+        timeCard.addView(note,new LinearLayout.LayoutParams(-1,dp(32)));
+        LinearLayout.LayoutParams tcp=new LinearLayout.LayoutParams(-1,dp(290));
+        tcp.topMargin=dp(8);content.addView(timeCard,tcp);
+
+        TextView info=tv("🔔  Full-screen alarm  •  🔊  Alarm sound  •  🗣  Task name spoken",13,muted,false);
+        info.setGravity(Gravity.CENTER);
+        info.setPadding(dp(4),dp(14),dp(4),dp(8));
+        content.addView(info,new LinearLayout.LayoutParams(-1,dp(58)));
+
+        scroll.addView(content);
+        root.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+
+        Button create=button("Create daily alarm  ✓",true);
+        create.setTextSize(17);
+        create.setBackground(shape(navy,20));
+        LinearLayout.LayoutParams cp=new LinearLayout.LayoutParams(-1,dp(58));
+        cp.topMargin=dp(8);root.addView(create,cp);
+
+        create.setOnClickListener(v->{
+            String s=name.getText().toString().trim();
+            if(s.isEmpty()){name.setError("Enter a task name");name.requestFocus();return;}
+            Task t=new Task();
+            t.id=System.currentTimeMillis();t.name=s;t.hour=tp.getHour();t.minute=tp.getMinute();
+            tasks.add(t);TaskStore.save(this,tasks);AlarmScheduler.schedule(this,t);
+            refresh();dialog.dismiss();
+        });
+
+        dialog.setContentView(root);
+        Window w=dialog.getWindow();
+        if(w!=null){
+            w.setBackgroundDrawableResource(android.R.color.transparent);
+            w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+        dialog.setOnShowListener(v->{
+            Window ww=dialog.getWindow();
+            if(ww!=null){
+                ww.setLayout(-1,-1);
+                ww.setGravity(Gravity.CENTER);
+            }
+        });
         dialog.show();
+        Window w2=dialog.getWindow();
+        if(w2!=null){
+            w2.setLayout(-1,-1);
+            w2.setGravity(Gravity.CENTER);
+        }
     }
 
     void complete(long id){
