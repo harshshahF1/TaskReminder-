@@ -10,6 +10,17 @@ public class AlarmReceiver extends BroadcastReceiver {
     public static final String CHANNEL="task_alarm_v2";
 
     @Override public void onReceive(Context c,Intent intent){
+        android.os.PowerManager.WakeLock wakeLock=null;
+        try{
+            android.os.PowerManager pm=(android.os.PowerManager)c.getSystemService(Context.POWER_SERVICE);
+            if(pm!=null){
+                wakeLock=pm.newWakeLock(
+                        android.os.PowerManager.PARTIAL_WAKE_LOCK,
+                        "TaskReminder:AlarmWake");
+                wakeLock.acquire(10000);
+            }
+        }catch(Exception ignored){}
+
         long id=intent.getLongExtra("taskId",-1);
         Task t=TaskStore.find(c,id);
         if(t==null||!t.active)return;
@@ -44,6 +55,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         AlarmScheduler.schedule(c,t);
         try{c.startActivity(ai);}catch(Exception ignored){}
+
+        if(wakeLock!=null){
+            try{if(wakeLock.isHeld())wakeLock.release();}catch(Exception ignored){}
+        }
     }
 
     public static void createChannel(Context c){
