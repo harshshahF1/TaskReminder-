@@ -7,7 +7,7 @@ import android.media.RingtoneManager;
 import androidx.core.app.NotificationCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    public static final String CHANNEL="task_alarm";
+    public static final String CHANNEL="task_alarm_v2";
 
     @Override public void onReceive(Context c,Intent intent){
         long id=intent.getLongExtra("taskId",-1);
@@ -51,7 +51,6 @@ public class AlarmReceiver extends BroadcastReceiver {
             NotificationManager nm=(NotificationManager)c.getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationChannel old=nm.getNotificationChannel(CHANNEL);
             if(old==null){
-                UriSound:
                 NotificationChannel ch=new NotificationChannel(
                         CHANNEL,"Task alarms",NotificationManager.IMPORTANCE_HIGH);
                 ch.setDescription("Full-screen daily task alarms");
